@@ -1,0 +1,9 @@
+<?php
+
+/**
+ * @file
+ * 
+ * Base file for the module.  Governs includes.
+ */
+
+include_once (inludes/entity_wrapper_mapper.inc);
