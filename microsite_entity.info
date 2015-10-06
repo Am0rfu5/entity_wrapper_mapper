@@ -1,0 +1,15 @@
+name = Microsite Entities
+description = Defines Microsite, entity directory based sub domains within Drupal
+package = Microsites
+version = VERSION
+core = 7.x
+
+dependencies[] = entity
+dependencies[] = views
+dependencies[] = date_api
+dependencies[] = date
+dependencies[] = date_popup
+dependencies[] = imce_plup_field
+
+files[] = microsite_entity.controller.inc
+files[] = microsite_entity.streams.inc

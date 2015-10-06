@@ -1,0 +1,405 @@
+<?php
+/**
+ * @file
+ * Installation file for the microsite_entity module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function microsite_entity_install() {
+  global $user;
+
+  $bundles = field_info_bundles('microsite_entity');
+  $t = get_t();
+
+  if (empty($bundles['hosted_microsite'])) {
+    $controller = new MicrositeEntityTypeController('microsite_entity_type');
+    $params = array();
+    $params['type'] = 'hosted_microsite';
+    $params['label'] = $t('Hosted Microsite');
+    $params['is_new'] = TRUE;
+    $params['description'] = $t('A Hosted Microsite.');
+    $params['uid'] = $user->uid;
+
+    $bundle = $controller->create($params);
+    $controller->save($bundle);
+  }
+
+  // Create a file field called Hosted File Assets.
+  $field = array(
+    'field_name' => 'field_hosted_file_assets',
+    'type' => 'file',
+    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+    'locked' => FALSE,
+    'indexes' => array('fid' => array('fid')),
+    'settings' => array(
+      'uri_scheme' => 'hosted',
+      'default_image' => FALSE,
+    ),
+    'storage' => array(
+      'type' => 'field_sql_storage',
+      'settings' => array(),
+    ),
+  );
+  field_create_field($field);
+
+  $instance = array(
+    'field_name' => 'field_hosted_file_assets',
+    'entity_type' => 'microsite_entity',
+    'label' => 'Hosted Microsite Assets',
+    'bundle' => 'hosted_microsite',
+    'settings' => array(
+      'file_extensions' => 'htm html css js pdf gif jpg jpeg png svg csv txt',
+    ),
+    'widget' => array(
+      'type' => 'imce_plup',
+      'weight' => 10,
+    ),
+    'display' => array(
+      'default' => array(
+        'label' => 'hidden',
+        'type' => 'microsites_file_table',
+        'weight' => 10,
+      ),
+    ),
+  );
+  field_create_instance($instance);
+
+  // Create a default vocabulary named "Hosted Microsite Tags",
+  // enabled for the 'hosted_microsite' entity type.
+  $description = $t('Hosted Microsite Tags.');
+  $vocabulary = (object) array(
+    'name' => $t('Hosted Microsite Tags'),
+    'description' => $description,
+    'machine_name' => 'hosted_microsite_tags',
+  );
+  taxonomy_vocabulary_save($vocabulary);
+
+  $field = array(
+    'field_name' => 'field_' . $vocabulary->machine_name,
+    'type' => 'taxonomy_term_reference',
+    // Set cardinality to unlimited for tagging.
+    'cardinality' => FIELD_CARDINALITY_UNLIMITED,
+    'settings' => array(
+      'allowed_values' => array(
+        array(
+          'vocabulary' => $vocabulary->machine_name,
+          'parent' => 0,
+        ),
+      ),
+    ),
+  );
+  field_create_field($field);
+
+  $help = $t('Enter a comma-separated list of words to describe your content.');
+  $instance = array(
+    'field_name' => 'field_' . $vocabulary->machine_name,
+    'entity_type' => 'microsite_entity',
+    'label' => 'Hosted Microsite Tags',
+    'bundle' => 'hosted_microsite',
+    'description' => $help,
+    'widget' => array(
+      'type' => 'taxonomy_autocomplete',
+      'weight' => 2,
+    ),
+    'display' => array(
+      'default' => array(
+        'type' => 'taxonomy_term_reference_link',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'type' => 'taxonomy_term_reference_link',
+        'weight' => 10,
+      ),
+    ),
+  );
+  field_create_instance($instance);
+
+  $field = array(
+    'field_name' => 'field_hosted_microsite_start',
+    'cardinality' => 1,
+    'type' => 'datestamp',
+    'settings' => array(
+      'repeat' => 0,
+      'todate' => FALSE,
+      'granularity' => array(
+        'year' => 'year',
+        'month' => 'month',
+        'day' => 'day',
+        'hour' => 'hour',
+        'minute' => 'minute',
+      ),
+      'tz_handling' => 'none',
+      'timezone_db' => '',
+    ),
+  );
+  field_create_field($field);
+
+  $instance = array(
+    'field_name' => 'field_hosted_microsite_start',
+    'entity_type' => 'microsite_entity',
+    'bundle' => 'hosted_microsite',
+    'label' => $t('Microsite Start Date'),
+    'required' => TRUE,
+    'description' => $t('Enter date microsite becomes active.'),
+    'widget' => array(
+      'type' => 'date_popup',
+      'weight' => 3,
+      'settings' => array(
+        'input_format' => 'Y-m-d H:i:s',
+        'year_range' => '-100:+100',
+        'increment' => 1,
+        'fromto' => FALSE,
+      ),
+    ),
+    'display' => array(
+      'default' => array(
+        'type' => 'date_default',
+        'format_type' => 'short',
+        'settings' => array(
+          'format_type' => 'short',
+          'show_repeat_rule' => 'show',
+          'multiple_number' => '',
+          'multiple_from' => '',
+          'multiple_to'  => '',
+          'fromto' => FALSE,
+        ),
+      ),
+    ),
+    'settings' => array(
+      'default_value' => 'now',
+      'default_format' => 'short',
+      'default_value_code' => '',
+      'default_value2' => 'blank',
+      'default_value_code2' => '',
+      'user_register_form' => '',
+    ),
+  );
+  field_create_instance($instance);
+
+  $field = array(
+    'field_name' => 'field_hosted_microsite_end',
+    'cardinality' => 1,
+    'type' => 'datestamp',
+    'settings' => array(
+      'repeat' => 0,
+      'todate' => FALSE,
+      'granularity' => array(
+        'year' => 'year',
+        'month' => 'month',
+        'day' => 'day',
+        'hour' => 'hour',
+        'minute' => 'minute',
+      ),
+      'tz_handling' => 'none',
+      'timezone_db' => '',
+    ),
+  );
+  field_create_field($field);
+
+  $instance = array(
+    'field_name' => 'field_hosted_microsite_end',
+    'entity_type' => 'microsite_entity',
+    'bundle' => 'hosted_microsite',
+    'label' => $t('Microsite End Date'),
+    'required' => FALSE,
+    'description' => $t('Enter date microsite becomes inactive.'),
+    'widget' => array(
+      'type' => 'date_popup',
+      'weight' => 4,
+      'settings' => array(
+        'input_format' => 'Y-m-d H:i:s',
+        'year_range' => '-100:+100',
+        'increment' => 1,
+        'fromto' => FALSE,
+      ),
+    ),
+    'display' => array(
+      'default' => array(
+        'type' => 'date_default',
+        'format_type' => 'short',
+        'settings' => array(
+          'format_type' => 'short',
+          'show_repeat_rule' => 'show',
+          'multiple_number' => '',
+          'multiple_from' => '',
+          'multiple_to'  => '',
+          'fromto' => FALSE,
+        ),
+      ),
+    ),
+    'settings' => array(
+      'default_value' => 'blank',
+      'default_format' => 'short',
+      'default_value_code' => '',
+      'default_value2' => 'blank',
+      'default_value_code2' => '',
+      'user_register_form' => '',
+    ),
+  );
+  field_create_instance($instance);
+
+  // Allow the uploading of 'insecure' files such as .js files.
+  variable_set('allow_insecure_uploads', 1);
+
+  $role = new stdClass();
+  $role->name = 'microsite administrator';
+  user_role_save($role);
+  $admin_role = user_role_load_by_name($role->name);
+  $admin_permissions = array(
+    'administer microsite_entity types',
+    'create microsite_entity entities',
+    'view microsite_entity entities',
+    'edit any microsite_entity entities',
+    'edit own microsite_entity entities',
+  );
+  user_role_grant_permissions($admin_role->rid, $admin_permissions);
+
+  $role = new stdClass();
+  $role->name = 'microsite editor';
+  user_role_save($role);
+  $editor_role = user_role_load_by_name($role->name);
+  $editor_permissions = array(
+    'create microsite_entity entities',
+    'view microsite_entity entities',
+    'edit any microsite_entity entities',
+    'edit own microsite_entity entities',
+  );
+  user_role_grant_permissions($editor_role->rid, $editor_permissions);
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function microsite_entity_uninstall() {
+  field_delete_field('field_hosted_file_assets');
+  field_delete_field('field_hosted_microsite_tags');
+  $vocab = taxonomy_vocabulary_machine_name_load('hosted_microsite_tags');
+  taxonomy_vocabulary_delete($vocab->vid);
+  field_delete_field('field_hosted_microsite_start');
+  field_delete_field('field_hosted_microsite_end');
+  user_role_delete('microsite administrator');
+  user_role_delete('microsite editor');
+
+  // Implement killswitch to control whether or not all hosted microsite files.
+  // get deleted when this module is un-installed
+  if (variable_get('microsite_entity_delete_files_on_uninstall', 0)) {
+    _microsite_entity_delete_hosted_microsite_files();
+  }
+  variable_del('file_hosted_path');
+  variable_del('file_integrated_path');
+}
+
+/**
+ * Implements hook_schema().
+ */
+function microsite_entity_schema() {
+  $schema = array();
+
+  $schema['microsite_entity'] = array(
+    'description' => 'The base table for microsites.',
+    'fields' => array(
+      'msid' => array(
+        'description' => 'The primary identifier for the microsite.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'type' => array(
+        'description' => 'The type (bundle) of this microsite.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'title' => array(
+        'description' => 'The title of the microsite.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'uid' => array(
+        'description' => 'ID of Drupal user creator.',
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+      'created' => array(
+        'description' => 'The Unix timestamp when the microsite was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'changed' => array(
+        'description' => 'The Unix timestamp when the microsite was most recently saved.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'description' => array(
+        'description' => 'microsite description.',
+        'type' => 'text',
+      ),
+    ),
+    'primary key' => array('msid'),
+  );
+
+  $schema['microsite_entity_type'] = array(
+    'description' => 'Stores information about all defined microsite types.',
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique microsite type ID.',
+      ),
+      'type' => array(
+        'description' => 'The machine-readable name of this type.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+      ),
+      'label' => array(
+        'description' => 'The human-readable name of this type.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'description' => array(
+        'description' => 'A brief description of this type.',
+        'type' => 'text',
+        'not null' => TRUE,
+        'size' => 'medium',
+        'translatable' => TRUE,
+      ),
+    ) + entity_exportable_schema_fields(),
+    'primary key' => array('id'),
+    'unique keys' => array(
+      'type' => array('type'),
+    ),
+  );
+
+  return $schema;
+}
+
+/**
+ * Utility function to delete all hosted microsite files.
+ *
+ * N.B.: this should be called only when microsite_entity module is
+ * being uninstalled.
+ */
+function _microsite_entity_delete_hosted_microsite_files() {
+  $sql = "SELECT fid FROM {file_managed} WHERE uri LIKE 'hosted://%'";
+  $result = db_query($sql);
+  foreach ($result->fetchCol() as $fid) {
+    $delusage = "DELETE FROM {file_usage} WHERE fid=:fid";
+    $delmanaged = "DELETE FROM {file_managed} WHERE fid=:fid";
+    db_query($delusage, array(':fid' => $fid));
+    db_query($delmanaged, array(':fid' => $fid));
+  }
+  $hosted_dir = variable_get('file_hosted_path', '');
+  if (!empty($hosted_dir)) {
+    file_unmanaged_delete_recursive($hosted_dir);
+  }
+}

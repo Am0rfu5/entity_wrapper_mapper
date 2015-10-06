@@ -1,0 +1,11 @@
+name = IMCE widget with Plupload
+description = Bulk file upload widget
+package = Microsites
+version = VERSION
+core = 7.x
+
+dependencies[] = plupload
+dependencies[] = imce
+dependencies[] = imce_plupload
+dependencies[] = imce_mkdir
+dependencies[] = imce_rename
