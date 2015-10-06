@@ -6,4 +6,7 @@
  * Base file for the module.  Governs includes.
  */
 
+/**
+ * Includes the file entity_wrapper_mapper.inc which contains the Class extension
+ */
 include_once ('includes/entity_wrapper_mapper.inc');
