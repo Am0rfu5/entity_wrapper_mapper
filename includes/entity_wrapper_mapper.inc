@@ -18,7 +18,7 @@
  * lists are itereated automatically although the first value can be specified
  * as the default.
  */
-class EntityWrapperMapper {
+class EntityWrapperMapper extends EntityMetadataWrapper{
 
   var $info;
   var $entity_wrapper;
@@ -225,9 +225,12 @@ class EntityWrapperMapper {
         }
         $value = implode($values);
         break;
-//      case 'token-replacement';
-//        $value =  $this->get_token_replacement($entity_wrapper, $info);
-//        break;
+        // This case was removed with along with its associated function
+        // it remains as a reminder of a possible improvement until this
+        // can be added to a wiki
+        // case 'token-replacement';
+        // $value =  $this->get_token_replacement($entity_wrapper, $info);
+        //        break;
 
       case 'default':
         $value = '';
@@ -251,6 +254,13 @@ class EntityWrapperMapper {
     return $value;
   }
 
+  /**
+   * Extracts a simple field value from the Entity_Metadata_Wrapper.
+   * 
+   * @param type $ew
+   * @param type $info
+   * @return type *
+   */
   private function valueRender($ew, $info) {
     $field = $ew->$info['field_name'];
     $type = $field->info('type');
@@ -261,6 +271,14 @@ class EntityWrapperMapper {
     return $value;
   }
 
+  /**
+   * Checks to see if the field exists.   This avoids the error caused when 
+   * trying to get the value of field that doesn't exist.
+   * 
+   * @param type $ew
+   * @param type $info
+   * @return boolean
+   */
   public function checkFieldExists($ew, $info) {
     $field_name = $info['field_name'];
     // Entity_metadata_wrapper has one giant flaw. Trying to ref a field that
@@ -276,7 +294,15 @@ class EntityWrapperMapper {
       return FALSE;
     }
   }
-
+  
+  /**
+   * Checks to see if there is an alt_fields listing in the mapping.  This 
+   * is used to give an alternate possible field to be given for the mapping
+   * 
+   * @param type $ew
+   * @param array $info
+   * @return type
+   */
   private function checkAlt($ew, $info) {
     $info['field_name'] = array_shift($info['alt_fields']);
     $value = $this->valueByField($ew, $info);
@@ -492,5 +518,3 @@ class EntityWrapperMapper {
   }
 
 }
-
-
