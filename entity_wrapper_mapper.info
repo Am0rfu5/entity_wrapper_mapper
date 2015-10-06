@@ -1,5 +1,0 @@
-name = Entity Wrapper Mapper
-description = An API for extending the Entity Metadata Wrapper to deliver a custom array of data based on a configuration map.
-package = Entity
-version = 7.x-1.0
-core = 7.x
