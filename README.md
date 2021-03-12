@@ -3,7 +3,14 @@ EntityWrapperMapper
 
 An extension of the EntityMetadataWrapper that returns a custom data array 
 based on a map (configuration array).  This module was created in order to more
-easily access fields that are referenced across multiple entities.
+easily access fields that are referenced across multiple entities. 
+
+(Note: The EntityMetadataWrapper was arguably the most powerful API 
+in Drupal 7, but with the complete rebuild of Drupal based on the incorporation 
+of Symfony2 into Drupal 8 it was dropped.  This was module was developed in 2014 
+before JSON was in use in any substanitive way, so it uses Drupal array
+structure for configuraiton that would could easily be replaced with a JSON config.
+This code is left here for historical reference only).
 
 Use
 ===
